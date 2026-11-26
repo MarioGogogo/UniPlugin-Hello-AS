@@ -1,0 +1,44 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+    namespace 'uni.dcloud.io.uniplugin_printer'
+
+    defaultConfig {
+        // PrintManager/PrintHelper 均为 API 19+ API，与 app 模块对齐
+        minSdkVersion 22
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    flatDir {
+        dirs '../app/libs'
+    }
+}
+
+dependencies {
+    // UniApp 核心库
+    compileOnly fileTree(dir: '../app/libs', include: ['uniapp-v8-release.aar'])
+
+    // AndroidX 库
+    compileOnly 'androidx.recyclerview:recyclerview:1.0.0'
+    compileOnly 'androidx.appcompat:appcompat:1.0.0'
+
+    // JSON 处理
+    implementation 'com.alibaba:fastjson:1.2.83'
+}

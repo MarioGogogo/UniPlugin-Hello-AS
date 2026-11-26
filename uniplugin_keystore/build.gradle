@@ -1,0 +1,38 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+    namespace 'io.dcloud.uniplugin.keystore'
+    defaultConfig {
+        minSdkVersion 22
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+repositories {
+    flatDir {
+        dirs '../app/libs', 'libs', '../../'
+    }
+}
+
+dependencies {
+    compileOnly fileTree(dir: '../app/libs', include: ['*.aar'])
+    compileOnly(name: 'mxopDecrypt-1.0-202512241035', ext: 'aar')
+    implementation 'com.alibaba:fastjson:1.2.83'
+    implementation 'androidx.appcompat:appcompat:1.0.0'
+}

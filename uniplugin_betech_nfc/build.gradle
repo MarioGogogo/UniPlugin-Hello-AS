@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 29
+    namespace 'uni.dcloud.io.uniplugin_betech_nfc'
+
+    defaultConfig {
+        // 插件自身代码无高版本 API 要求；24 是照搬 betech-nfc AAR 的保守声明，与 app 模块对齐
+        minSdkVersion 22
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+repositories {
+    flatDir {
+        dirs '../app/libs'
+    }
+}
+
+dependencies {
+    // 必达 NFC SDK AAR - 通过 app 模块传递依赖，使用 compileOnly
+    compileOnly(name: 'betech-nfc-v2.0', ext: 'aar')
+
+    // UniApp 核心库
+    compileOnly fileTree(dir: '../app/libs', include: ['uniapp-v8-release.aar'])
+
+    // AndroidX 库
+    compileOnly 'androidx.recyclerview:recyclerview:1.0.0'
+    compileOnly 'androidx.appcompat:appcompat:1.0.0'
+
+    // JSON 处理
+    implementation 'com.alibaba:fastjson:1.2.83'
+}

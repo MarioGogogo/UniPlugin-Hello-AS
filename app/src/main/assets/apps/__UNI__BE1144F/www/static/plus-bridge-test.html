@@ -1,0 +1,1088 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>WebView 通信测试</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif;
+      background: #f9fafb;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Header */
+    .header {
+      padding: 20px 20px 20px 20px;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .header-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-dots span {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .header-dots span:nth-child(1) { background: rgba(255,255,255,0.8); }
+    .header-dots span:nth-child(2) { background: rgba(255,255,255,0.5); }
+    .header-dots span:nth-child(3) { background: rgba(255,255,255,0.3); }
+
+    .header-badge {
+      color: rgba(255,255,255,0.7);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      background: rgba(255,255,255,0.2);
+      padding: 10px;
+      border-radius: 16px;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+    }
+
+    .header-icon svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .header-title {
+      color: white;
+      font-size: 20px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .header-subtitle {
+      color: rgba(255,255,255,0.6);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    /* Content */
+    .content-inner {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 16px;
+      padding-bottom: 32px;
+    }
+
+    /* Card */
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+      border: 1px solid #f3f4f6;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .card-icon {
+      padding: 8px;
+      border-radius: 12px;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .card-icon svg {
+      width: 15px;
+      height: 15px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2937;
+      line-height: 1.3;
+    }
+
+    .card-subtitle {
+      font-size: 11px;
+      color: #9ca3af;
+      line-height: 1.3;
+      margin-top: 2px;
+    }
+
+    /* Color buttons */
+    .color-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.1s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .color-btn:active {
+      transform: scale(0.95);
+    }
+
+    .color-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .color-btn.full-width {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Grid buttons */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .grid-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 12px 12px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.1s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+      background: none;
+    }
+
+    .grid-btn:active {
+      transform: scale(0.95);
+    }
+
+    .grid-btn svg {
+      width: 13px;
+      height: 13px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Pill buttons */
+    .pill-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill-btn {
+      color: white;
+      border: none;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: transform 0.1s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .pill-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Sub label */
+    .sub-label {
+      font-size: 11px;
+      color: #9ca3af;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      margin-top: 12px;
+    }
+
+    .sub-label:first-child {
+      margin-top: 0;
+    }
+
+    /* Section spacing */
+    .section-gap {
+      margin-top: 12px;
+    }
+
+    .hint-text {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 8px;
+      padding-left: 2px;
+    }
+
+    /* Log area */
+    .log-scroll {
+      max-height: 256px;
+      overflow-y: auto;
+      padding-right: 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .log-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 0;
+      color: #d1d5db;
+    }
+
+    .log-empty svg {
+      width: 28px;
+      height: 28px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+    }
+
+    .log-empty p {
+      font-size: 12px;
+      margin-top: 8px;
+    }
+
+    .log-timeline {
+      position: relative;
+    }
+
+    .log-timeline::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: 12px;
+      bottom: 12px;
+      width: 1px;
+      background: linear-gradient(to bottom, #c4b5fd, #93c5fd, #6ee7b7);
+    }
+
+    .log-item {
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .log-item + .log-item {
+      margin-top: 4px;
+    }
+
+    .log-dot {
+      position: relative;
+      z-index: 10;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 10px;
+      margin-right: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+
+    .log-dot.error { background: #fb7185; box-shadow: 0 4px 6px -1px rgba(251,113,133,0.25); }
+    .log-dot.success { background: #34d399; box-shadow: 0 4px 6px -1px rgba(52,211,153,0.25); }
+    .log-dot.info { background: #38bdf8; box-shadow: 0 4px 6px -1px rgba(56,189,248,0.25); }
+
+    .log-bubble {
+      flex: 1;
+      min-width: 0;
+      border-radius: 16px;
+      border-top-left-radius: 4px;
+      padding: 8px 12px;
+    }
+
+    .log-bubble.error {
+      background: #fff1f2;
+      border: 1px solid #ffe4e6;
+    }
+
+    .log-bubble.success {
+      background: #ecfdf5;
+      border: 1px solid #d1fae5;
+    }
+
+    .log-bubble.info {
+      background: #f0f9ff;
+      border: 1px solid #e0f2fe;
+    }
+
+    .log-time {
+      font-size: 10px;
+      font-family: 'SF Mono', 'Menlo', 'Courier New', monospace;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .log-time.error { color: #fb7185; }
+    .log-time.success { color: #10b981; }
+    .log-time.info { color: #38bdf8; }
+
+    .log-msg {
+      font-size: 12px;
+      line-height: 1.5;
+      word-break: break-all;
+    }
+
+    .log-msg.error { color: #be123c; }
+    .log-msg.success { color: #047857; }
+    .log-msg.info { color: #0369a1; }
+
+    .clear-log-btn {
+      margin-top: 12px;
+      width: 100%;
+      background: linear-gradient(to right, #fb7185, #ec4899);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.1s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .clear-log-btn:active {
+      transform: scale(0.95);
+    }
+
+    .clear-log-btn svg {
+      width: 14px;
+      height: 14px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* File upload override */
+    .file-upload {
+      position: relative;
+      display: inline-block;
+      overflow: hidden;
+    }
+
+    .file-upload input[type="file"] {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    /* Gradient utilities */
+    .grad-blue { background: linear-gradient(to right, #3b82f6, #2563eb); }
+    .grad-violet { background: linear-gradient(to right, #8b5cf6, #7c3aed); }
+    .grad-orange { background: linear-gradient(to right, #fb923c, #ea580c); }
+    .grad-rose { background: linear-gradient(to right, #f43f5e, #dc2626); }
+    .grad-pink { background: linear-gradient(to right, #ec4899, #e11d48); }
+    .grad-amber { background: linear-gradient(to right, #fbbf24, #d97706); }
+
+    .grad-icon-blue { background: linear-gradient(to bottom right, #60a5fa, #2563eb); }
+    .grad-icon-violet { background: linear-gradient(to bottom right, #a78bfa, #7c3aed); }
+    .grad-icon-orange { background: linear-gradient(to bottom right, #fb923c, #f43f5e); }
+    .grad-icon-pink { background: linear-gradient(to bottom right, #f472b6, #e11d48); }
+    .grad-icon-amber { background: linear-gradient(to bottom right, #fbbf24, #eab308); }
+    .grad-icon-indigo { background: linear-gradient(to bottom right, #818cf8, #6366f1); }
+
+    /* Pill gradients */
+    .pill-teal-1 { background: linear-gradient(to right, #2dd4bf, #0d9488); }
+    .pill-cyan-1 { background: linear-gradient(to right, #22d3ee, #0e7490); }
+    .pill-emerald-1 { background: linear-gradient(to right, #10b981, #047857); }
+    .pill-green-1 { background: linear-gradient(to right, #22c55e, #15803d); }
+    .pill-lime-1 { background: linear-gradient(to right, #84cc16, #16a34a); }
+
+    /* Grid item gradients */
+    .grid-grad-blue { background: linear-gradient(to bottom right, #60a5fa, #2563eb); }
+    .grid-grad-teal { background: linear-gradient(to bottom right, #2dd4bf, #0d9488); }
+    .grid-grad-amber { background: linear-gradient(to bottom right, #fbbf24, #f97316); }
+    .grid-grad-slate { background: linear-gradient(to bottom right, #94a3b8, #475569); }
+    .grid-grad-violet { background: linear-gradient(to bottom right, #a78bfa, #7c3aed); }
+    .grid-grad-indigo { background: linear-gradient(to bottom right, #818cf8, #4f46e5); }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 24px;
+      padding: 24px;
+      width: 100%;
+      max-width: 320px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      animation: modalIn 0.2s ease-out;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 4px;
+    }
+
+    .modal-desc {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-bottom: 16px;
+    }
+
+    .modal-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s;
+      background: #f9fafb;
+      color: #1f2937;
+    }
+
+    .modal-input:focus {
+      border-color: #8b5cf6;
+      background: #fff;
+    }
+
+    .modal-input::placeholder {
+      color: #d1d5db;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .modal-btn {
+      flex: 1;
+      padding: 11px 0;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .modal-btn:active {
+      transform: scale(0.95);
+    }
+
+    .modal-btn-cancel {
+      background: #f3f4f6;
+      color: #6b7280;
+    }
+
+    .modal-btn-confirm {
+      background: linear-gradient(135deg, #ec4899, #e11d48);
+      color: white;
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.3);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <div class="header-dots">
+        <span></span><span></span><span></span>
+      </div>
+      <span class="header-badge">DEBUG</span>
+    </div>
+    <div class="header-content">
+      <div class="header-icon">
+        <!-- Layers icon -->
+        <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+      </div>
+      <div>
+        <div class="header-title">WebView 通信测试</div>
+        <div class="header-subtitle">Bridge Communication Panel</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content-inner">
+
+      <!-- 文件选择 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon grad-icon-blue">
+            <!-- FileText icon -->
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <div class="card-title">文件选择</div>
+          </div>
+        </div>
+        <label class="file-upload">
+          <input type="file" id="fileInput" onchange="handleFileSelect(event)" />
+          <button class="color-btn grad-blue" onclick="event.preventDefault()">
+            <!-- Upload icon -->
+            <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            选择文件
+          </button>
+        </label>
+        <div id="file-info" style="font-size: 12px; color: #374151; line-height: 1.8; margin-top: 8px;"></div>
+      </div>
+
+      <!-- 第三方相册库 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon grad-icon-violet">
+            <!-- ImageIcon icon -->
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </div>
+          <div>
+            <div class="card-title">第三方相册库</div>
+            <div class="card-subtitle">openPhotoAlbum · 最大可选图数量</div>
+          </div>
+        </div>
+        <button class="color-btn grad-violet" onclick="openPhotoAlbum(9)">
+          <!-- ImageIcon icon -->
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          选 9 张
+        </button>
+      </div>
+
+      <!-- 拍照/录像测试 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon grad-icon-orange">
+            <!-- Camera icon -->
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+          <div>
+            <div class="card-title">拍照/录像测试</div>
+            <div class="card-subtitle">capture</div>
+          </div>
+        </div>
+
+        <div class="sub-label">拍照 (Android拍照 / iOS拍照)</div>
+        <label class="file-upload">
+          <input type="file" accept="image/jpg,image/jpeg,image/gif,image/png" capture="environment" onchange="handleFileSelect(event)" />
+          <button class="color-btn grad-orange" onclick="event.preventDefault()">
+            <!-- Camera icon -->
+            <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            拍照 image/jpg*
+          </button>
+        </label>
+
+        <div class="sub-label">纯录像 (Android录像 / iOS录像)</div>
+        <label class="file-upload">
+          <input type="file" accept="video/mp4" capture="environment" onchange="handleFileSelect(event)" />
+          <button class="color-btn grad-rose" onclick="event.preventDefault()">
+            <!-- Video icon -->
+            <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            录像 video/mp4*
+          </button>
+        </label>
+
+        <div class="sub-label">混合类型 (Android混合 / iOS混合+拍照)</div>
+        <div class="pill-wrap">
+          <label class="file-upload">
+            <input type="file" accept="image/*,video/*" capture="environment" onchange="handleFileSelect(event)" />
+            <button class="pill-btn pill-teal-1" onclick="event.preventDefault()">混合 image/*,video/*</button>
+          </label>
+          <label class="file-upload">
+            <input type="file" accept="video/*,image/*" capture="environment" onchange="handleFileSelect(event)" />
+            <button class="pill-btn pill-cyan-1" onclick="event.preventDefault()">混合 video/*,image/*</button>
+          </label>
+          <label class="file-upload">
+            <input type="file" accept="image/jpg,image/jpeg,image/gif,image/png,video/mp4,video/ogg,video/webm,video/mov" capture="environment" onchange="handleFileSelect(event)" />
+            <button class="pill-btn pill-emerald-1" onclick="event.preventDefault()">混合 image+video完整</button>
+          </label>
+          <label class="file-upload">
+            <input type="file" accept="image/*,video/mp4,video/ogg,video/webm,video/mov" capture="environment" onchange="handleFileSelect(event)" />
+            <button class="pill-btn pill-green-1" onclick="event.preventDefault()">混合 image/*+video/mp4*</button>
+          </label>
+          <label class="file-upload">
+            <input type="file" accept="video/mp4,video/ogg,video/webm,video/mov,image/*" capture="environment" onchange="handleFileSelect(event)" />
+            <button class="pill-btn pill-lime-1" onclick="event.preventDefault()">混合 video...image/*</button>
+          </label>
+        </div>
+      </div>
+
+      <!-- 发送消息到原生 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon grad-icon-pink">
+            <!-- MessageSquare icon -->
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div>
+            <div class="card-title">发送消息到原生</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <!-- 退出 WebView -->
+          <button class="grid-btn grid-grad-blue" onclick="sendCloseWebView()">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+            <span>退出 WebView</span>
+          </button>
+          <!-- 重新加载 -->
+          <button class="grid-btn grid-grad-teal" onclick="sendReload()">
+            <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            <span>重新加载</span>
+          </button>
+          <!-- 清除缓存 -->
+          <button class="grid-btn grid-grad-amber" onclick="sendClearCache()">
+            <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+            <span>清除缓存</span>
+          </button>
+          <!-- 返回上一页 -->
+          <button class="grid-btn grid-grad-slate" onclick="sendGoBack()">
+            <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            <span>返回上一页</span>
+          </button>
+          <!-- 页面跳链 -->
+          <button class="grid-btn grid-grad-violet" onclick="sendOnLoad()">
+            <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+            <span>页面跳链</span>
+          </button>
+          <!-- 获取设备信息 -->
+          <button class="grid-btn grid-grad-indigo" onclick="sendGetDeviceInfo()">
+            <svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            <span>获取设备信息</span>
+          </button>
+        </div>
+        <div class="section-gap">
+          <button class="color-btn grad-pink full-width" onclick="sendCustomMessage()">
+            <!-- Settings icon -->
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            自定义消息
+          </button>
+        </div>
+      </div>
+
+      <!-- X5 内核信息 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon grad-icon-amber">
+            <!-- Cpu icon -->
+            <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+          </div>
+          <div>
+            <div class="card-title">X5 内核信息</div>
+          </div>
+        </div>
+        <button class="color-btn grad-amber" onclick="getX5Info()">
+          <!-- Cpu icon -->
+          <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+          获取 X5 版本
+        </button>
+        <div id="x5-info" class="hint-text">点击按钮获取 X5 内核信息</div>
+      </div>
+
+      <!-- 消息日志 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon grad-icon-indigo">
+            <!-- ScrollText icon -->
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <div>
+            <div class="card-title">消息日志</div>
+          </div>
+        </div>
+        <div class="log-scroll" id="log-scroll">
+          <div class="log-empty" id="log-empty" style="display:none;">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <p>暂无日志</p>
+          </div>
+          <div class="log-timeline" id="log-timeline"></div>
+        </div>
+        <button class="clear-log-btn" onclick="clearLog()">
+          <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+          清空日志
+        </button>
+      </div>
+
+    </div>
+
+  <!-- 自定义消息弹窗 -->
+  <div class="modal-overlay" id="customMsgModal" onclick="if(event.target===this)closeModal()">
+    <div class="modal-box">
+      <div class="modal-title">自定义消息</div>
+      <div class="modal-desc">输入要发送到原生的消息内容</div>
+      <input type="text" class="modal-input" id="customMsgInput" placeholder="请输入消息内容..." />
+      <div class="modal-actions">
+        <button class="modal-btn modal-btn-cancel" onclick="closeModal()">取消</button>
+        <button class="modal-btn modal-btn-confirm" onclick="confirmSend()">发送</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========== 日志函数 ==========
+    var logCount = 0;
+    var logEntries = [];
+
+    function renderLogs() {
+      var timeline = document.getElementById('log-timeline');
+      var empty = document.getElementById('log-empty');
+
+      if (logEntries.length === 0) {
+        empty.style.display = 'flex';
+        timeline.innerHTML = '';
+        return;
+      }
+
+      empty.style.display = 'none';
+      var html = '';
+      for (var i = 0; i < logEntries.length; i++) {
+        var entry = logEntries[i];
+        var type = entry.type || 'info';
+        html += '<div class="log-item">' +
+          '<div class="log-dot ' + type + '"></div>' +
+          '<div class="log-bubble ' + type + '">' +
+          '<span class="log-time ' + type + '">' + entry.time + '</span>' +
+          '<p class="log-msg ' + type + '">' + entry.message + '</p>' +
+          '</div></div>';
+      }
+      timeline.innerHTML = html;
+
+      var scrollEl = document.getElementById('log-scroll');
+      scrollEl.scrollTop = scrollEl.scrollHeight;
+    }
+
+    function getTimeStr() {
+      var now = new Date();
+      return now.getHours().toString().padStart(2, '0') + ':' +
+        now.getMinutes().toString().padStart(2, '0') + ':' +
+        now.getSeconds().toString().padStart(2, '0');
+    }
+
+    function addLog(message, type) {
+      logEntries.push({ time: getTimeStr(), message: message, type: type || 'info' });
+      logCount++;
+      if (logCount > 50) {
+        logEntries.shift();
+      }
+      renderLogs();
+    }
+
+    function logOut(msg) {
+      addLog('→ ' + msg, 'success');
+    }
+
+    function logIn(msg) {
+      addLog('← ' + msg, 'info');
+    }
+
+    function logError(msg) {
+      addLog('✕ ' + msg, 'error');
+    }
+
+    function clearLog() {
+      logEntries = [];
+      logCount = 0;
+      renderLogs();
+    }
+
+    // ========== 相册 ==========
+    function openPhotoAlbum(maxSelectable) {
+      if (window.UniWebView) {
+        window.UniWebView.openPhotoAlbum(maxSelectable);
+      } else {
+        console.error('当前不在 UniApp 原生基座 WebView 环境中');
+      }
+    }
+
+    // ========== 接收 WebView 消息 ==========
+    window.updatePageTitle = function (title) {
+      document.title = title;
+      logIn('uniapp调用h5的方法: ' + JSON.stringify(title));
+      return '标题已更新';
+    };
+
+    window.receiveFromUniApp = function (data) {
+      logIn('receiveFromUniApp: ' + JSON.stringify(data));
+    };
+
+    // ========== 发送消息到 WebView (原生交互) ==========
+    function sendToApp(payload) {
+      var msgStr = typeof payload === 'string' ? payload : JSON.stringify(payload);
+      logOut(msgStr);
+
+      if (window.UniWebView && typeof window.UniWebView.postMessage === 'function') {
+        window.UniWebView.postMessage(msgStr);
+        addLog('  → UniWebView.postMessage', 'info');
+        return;
+      }
+
+      if (typeof window.sendToUniApp === 'function') {
+        window.sendToUniApp(msgStr);
+        addLog('  → sendToUniApp', 'info');
+        return;
+      }
+
+      logError('无法发送：WebView 通信接口不可用');
+    }
+
+    function callUniAppHandler(handlerName, params) {
+      var dataStr = typeof params === 'string' ? params : JSON.stringify(params);
+      logOut('callHandler[' + handlerName + ']: ' + dataStr);
+
+      if (window.UniWebView && typeof window.UniWebView.callHandler === 'function') {
+        window.UniWebView.callHandler(handlerName, dataStr);
+        addLog('  → UniWebView.callHandler', 'info');
+        return;
+      }
+
+      if (window.UniWebView && typeof window.UniWebView.postMessage === 'function') {
+        window.UniWebView.postMessage(
+          JSON.stringify({ type: 'callHandler', handler: handlerName, data: params })
+        );
+        addLog('  → postMessage 模拟', 'info');
+        return;
+      }
+
+      logError('无法调用：WebView 通信接口不可用');
+    }
+
+    // 业务发送函数
+    function sendOnLoad() {
+      sendToApp({ type: 'ONLOAD', page: document.title, url: location.href });
+    }
+
+    function sendCloseWebView() {
+      sendToApp({ type: 'closeWebView' });
+    }
+
+    function sendReload() {
+      console.log('sendReload :>> ', '发送 reload 消息');
+      sendToApp({ type: 'reload' });
+    }
+
+    function sendClearCache() {
+      sendToApp({ type: 'clearCache' });
+    }
+
+    function sendGoBack() {
+      sendToApp({ type: 'goBack' });
+    }
+
+    function sendGetDeviceInfo() {
+      callUniAppHandler('getDeviceInfo', {});
+    }
+
+    function sendCustomMessage() {
+      var modal = document.getElementById('customMsgModal');
+      var input = document.getElementById('customMsgInput');
+      input.value = '';
+      modal.classList.add('active');
+      setTimeout(function () { input.focus(); }, 100);
+    }
+
+    function closeModal() {
+      document.getElementById('customMsgModal').classList.remove('active');
+    }
+
+    function confirmSend() {
+      var input = document.getElementById('customMsgInput');
+      var msg = input.value.trim();
+      if (msg) {
+        sendToApp({ type: 'custom', data: msg });
+        closeModal();
+      }
+    }
+
+    // ========== 文件选择 ==========
+    function handleFileSelect(event) {
+      var file = event.target.files[0];
+      var infoEl = document.getElementById('file-info');
+
+      if (!file) {
+        infoEl.innerHTML = '';
+        return;
+      }
+
+      var sizeStr =
+        file.size < 1024
+          ? file.size + ' B'
+          : file.size < 1024 * 1024
+            ? (file.size / 1024).toFixed(2) + ' KB'
+            : (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+      infoEl.innerHTML =
+        '文件名：' + file.name + '<br>' +
+        '类型：' + (file.type || '未知') + '<br>' +
+        '大小：' + sizeStr;
+
+      logIn('选择文件：' + file.name + ' (' + sizeStr + ')');
+
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var base64 = e.target.result.split(',')[1];
+        sendToApp({
+          type: 'fileSelected',
+          data: { name: file.name, type: file.type, size: file.size, base64: base64 }
+        });
+        logOut('文件 Base64 已发送（长度：' + base64.length + '）');
+      };
+      reader.onerror = function () {
+        logError('文件读取失败');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // ========== X5 内核信息 ==========
+    function getX5Info() {
+      var infoEl = document.getElementById('x5-info');
+      try {
+        if (!window.UniWebView || typeof window.UniWebView.getX5Version !== 'function') {
+          infoEl.innerHTML = '<span style="color:#ef4444;">UniWebView.getX5Version 接口不可用</span>';
+          logError('UniWebView.getX5Version 接口不可用');
+          return;
+        }
+
+        var x5Info = JSON.parse(window.UniWebView.getX5Version());
+
+        var html =
+          '是否使用 X5 内核：<b style="color:' + (x5Info.isX5 ? '#10b981' : '#ef4444') + ';">' + x5Info.isX5 + '</b><br>' +
+          'X5 版本号 (version)：<b>' + x5Info.version + '</b><br>' +
+          'SDK 版本号 (sdkVersion)：<b>' + x5Info.sdkVersion + '</b><br>' +
+          '是否支持视频播放：<b>' + x5Info.canSupportVideo + '</b>';
+        infoEl.innerHTML = html;
+        logIn('X5 内核信息：' + JSON.stringify(x5Info));
+      } catch (e) {
+        infoEl.innerHTML = '<span style="color:#ef4444;">获取失败：' + e.message + '</span>';
+        logError('getX5Version 异常：' + e.message);
+      }
+    }
+
+    // ========== 页面加载初始化 ==========
+    addLog('页面加载完成，可通过 sendToApp 或 callUniAppHandler 与 WebView 通信', 'success');
+
+    // 自动发送 ONLOAD 消息
+    sendOnLoad();
+
+    // 监听自定义事件
+    window.addEventListener('uniapp-message', function (e) {
+      logIn('uniapp-message 事件：' + JSON.stringify(e.detail));
+    });
+
+    // ========== 状态栏高度 ==========
+    function getStatusBarHeight() {
+      try {
+        if (!window.UniWebView || typeof window.UniWebView.getStatusBarHeight !== 'function') {
+          logError('UniWebView.getStatusBarHeight 接口不可用');
+          return;
+        }
+
+        var heightInfo = JSON.parse(window.UniWebView.getStatusBarHeight());
+        logIn('状态栏高度: ' + JSON.stringify(heightInfo));
+      } catch (e) {
+        logError('getStatusBarHeight 异常：' + e.message);
+      }
+    }
+  </script>
+
+</body>
+
+</html>

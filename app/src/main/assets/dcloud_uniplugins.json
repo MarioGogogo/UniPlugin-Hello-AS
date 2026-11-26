@@ -1,0 +1,97 @@
+{
+  "nativePlugins": [
+    {
+      "plugins": [
+        {
+          "type": "module",
+          "name": "TestModule",
+          "class": "io.dcloud.uniplugin.TestModule"
+        }
+      ]
+    },
+    {
+      "plugins": [
+        {
+          "type": "component",
+          "name": "myText",
+          "class": "io.dcloud.uniplugin.TestText"
+        }
+      ]
+    },
+    {
+      "hooksClass": "",
+      "plugins": [
+        {
+          "type": "module",
+          "name": "DCloud-RichAlert",
+          "class": "uni.dcloud.io.uniplugin_richalert.RichAlertModule"
+        }
+      ]
+    },
+    {
+      "hooksClass": "",
+      "plugins": [
+        {
+          "type": "component",
+          "name": "UniWebView",
+          "class": "uni.dcloud.io.uniplugin_webview.WebViewComponent"
+        },
+        {
+          "type": "module",
+          "name": "UniWebViewModule",
+          "class": "uni.dcloud.io.uniplugin_webview.WebViewModule"
+        }
+      ]
+    },
+    {
+      "hooksClass": "",
+      "plugins": [
+        {
+          "type": "component",
+          "name": "X5WebView",
+          "class": "uni.dcloud.io.uniplugin_webview.X5WebViewComponent"
+        },
+        {
+          "type": "module",
+          "name": "X5WebViewModule",
+          "class": "uni.dcloud.io.uniplugin_webview.X5WebViewModule"
+        },
+        {
+          "type": "module",
+          "name": "X5LocalInstallModule",
+          "class": "uni.dcloud.io.uniplugin_webview.X5LocalInstallModule"
+        }
+      ]
+    },
+    {
+      "hooksClass": "",
+      "plugins": [
+        {
+          "type": "module",
+          "name": "BetechNfcModule",
+          "class": "uni.dcloud.io.uniplugin_betech_nfc.BetechNfcModule"
+        }
+      ]
+    },
+    {
+      "hooksClass": "",
+      "plugins": [
+        {
+          "type": "module",
+          "name": "mxop-KeyStore",
+          "class": "io.dcloud.uniplugin.KeystoreModule"
+        }
+      ]
+    },
+    {
+      "hooksClass": "",
+      "plugins": [
+        {
+          "type": "module",
+          "name": "UniPrinterModule",
+          "class": "uni.dcloud.io.uniplugin_printer.PrinterModule"
+        }
+      ]
+    }
+  ]
+}

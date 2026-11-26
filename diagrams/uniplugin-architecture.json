@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "uni-app 原生插件架构",
+    "locale": "zh-CN",
+    "output": "uniplugin-architecture.html",
+    "quality_profile": "showcase",
+    "viewBox": [1380, 540],
+    "views": [
+      { "id": "call-path", "label": "JS 调用链", "focus": ["frontend", "unisdk", "registry"], "note": "前端到插件实例的完整调用路径与注册表解析。" },
+      { "id": "webview-flow", "label": "WebView 体系", "focus": ["frontend", "unisdk", "webview", "h5"], "note": "Module 调用与 nvue 组件两条接入方式，最终加载 H5。" },
+      { "id": "hardware", "label": "硬件外设", "focus": ["nfc", "printer", "lock", "printdev"], "note": "门锁 NFC 与系统打印两条硬件通路。" }
+    ]
+  },
+  "components": [
+    { "id": "registry", "type": "database", "label": "dcloud_uniplugins.json", "sublabel": "插件注册表", "pos": [335, 50], "size": [200, 56] },
+    { "id": "unisdk", "type": "backend", "label": "uniapp-v8-release.aar", "sublabel": "uni SDK · JS Bridge", "tag": "compileOnly", "pos": [350, 244], "size": [170, 72] },
+    { "id": "frontend", "type": "frontend", "label": "uni-app 前端", "sublabel": "vue / nvue 页面", "pos": [365, 480], "size": [140, 56] },
+    { "id": "keystore", "type": "security", "label": "uniplugin_keystore", "sublabel": "Android Keystore AES-GCM", "pos": [50, 80], "size": [190, 64] },
+    { "id": "samples", "type": "backend", "label": "官方示例插件", "sublabel": "TestModule / myText / RichAlert", "pos": [50, 248], "size": [190, 64] },
+    { "id": "uts", "type": "backend", "label": "uts-toast", "sublabel": "UTS 插件 (Kotlin)", "pos": [50, 416], "size": [190, 64] },
+    { "id": "webview", "type": "backend", "label": "uniplugin_webview", "sublabel": "UniWebView / X5WebView", "tag": "2 组件 + 3 模块", "pos": [880, 80], "size": [190, 64] },
+    { "id": "nfc", "type": "backend", "label": "uniplugin_betech_nfc", "sublabel": "必达门锁 NFC", "tag": "betech-nfc-v2.0.aar", "pos": [880, 248], "size": [190, 64] },
+    { "id": "printer", "type": "backend", "label": "uniplugin_printer", "sublabel": "PrintManager 图片/PDF/网页", "pos": [880, 416], "size": [190, 64] },
+    { "id": "h5", "type": "external", "label": "H5 页面", "sublabel": "WebView 加载的页面", "pos": [1200, 80], "size": [140, 64] },
+    { "id": "lock", "type": "external", "label": "必达门锁", "sublabel": "NFC 门锁硬件", "pos": [1200, 248], "size": [140, 64] },
+    { "id": "printdev", "type": "external", "label": "打印机", "sublabel": "系统打印服务", "pos": [1200, 416], "size": [140, 64] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Android 自定义基座 APK", "wraps": ["registry", "unisdk", "keystore", "samples", "uts", "webview", "nfc", "printer"], "pad": 30 }
+  ],
+  "connections": [
+    { "id": "frontend-to-sdk", "from": "frontend", "to": "unisdk", "label": "uni.requireNativePlugin()", "variant": "emphasis", "fromSide": "top", "toSide": "bottom" },
+    { "id": "sdk-to-registry", "from": "unisdk", "to": "registry", "label": "启动时读取插件映射", "fromSide": "top", "toSide": "bottom" },
+    { "id": "sdk-to-webview", "from": "unisdk", "to": "webview", "label": "Module + nvue 组件" },
+    { "id": "sdk-to-keystore", "from": "unisdk", "to": "keystore" },
+    { "id": "sdk-to-samples", "from": "unisdk", "to": "samples" },
+    { "id": "sdk-to-nfc", "from": "unisdk", "to": "nfc" },
+    { "id": "sdk-to-printer", "from": "unisdk", "to": "printer" },
+    { "id": "sdk-to-uts", "from": "unisdk", "to": "uts" },
+    { "id": "webview-to-h5", "from": "webview", "to": "h5", "label": "JsBridge / 加载 H5" },
+    { "id": "nfc-to-lock", "from": "nfc", "to": "lock", "label": "NFC 读卡 / 写卡" },
+    { "id": "printer-to-printdev", "from": "printer", "to": "printdev", "label": "PrintJob" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "调用链", "items": [
+      "前端 uni.requireNativePlugin('模块名') 获取插件实例",
+      "uni-v8 SDK 依据 dcloud_uniplugins.json 反射实例化",
+      "回调经 invoke / invokeAndKeepAlive 返回 JS"
+    ] },
+    { "dot": "emerald", "title": "核心插件", "items": [
+      "uniplugin_webview：Module 调用 + nvue 组件（UniWebView / X5WebView）",
+      "uniplugin_keystore：Android Keystore 硬件级 AES-GCM 256",
+      "uniplugin_betech_nfc / uniplugin_printer：门锁 NFC 与系统打印"
+    ] },
+    { "dot": "rose", "title": "关键约束", "items": [
+      "Component 插件仅 nvue 页面可用，事件名编译为全小写",
+      "各插件 compileOnly 引用 uniapp-v8-release.aar 避免重复打包",
+      "新增插件需同步 settings.gradle、app build.gradle 与注册表"
+    ] }
+  ]
+}

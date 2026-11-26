@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>必达门锁 NFC 调试面板</title>
+    <script type="text/javascript" src="https://gitee.com/dcloud/uni-app/raw/dev/dist/uni.webview.1.5.4.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 15px;
+            margin: 0;
+            background-color: #f5f5f9;
+            color: #333;
+        }
+
+        h3 {
+            margin-top: 10px;
+            color: #111;
+            border-left: 4px solid #007aff;
+            padding-left: 8px;
+        }
+
+        .card {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .form-group label {
+            width: 90px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .form-group input,
+        .form-group select {
+            flex: 1;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007aff;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        button.btn-danger {
+            background-color: #ff3b30;
+        }
+
+        button.btn-success {
+            background-color: #34c759;
+        }
+
+        #log-area {
+            background: #222;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card">
+        <h3>核心基础操作</h3>
+        <div class="form-group">
+            <label>扇区号：</label>
+            <input type="number" id="sectorNo" value="1">
+        </div>
+        <div class="form-group">
+            <label>酒店类型：</label>
+            <select id="hotelType">
+                <option value="2">2 - 加密版</option>
+                <option value="1">1 - 非加密版</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>酒店密码：</label>
+            <input type="text" id="hotelPwd" value="" placeholder="8位数字，留空代表默认">
+        </div>
+
+        <button class="btn-success" onclick="doAction('READ_CARD')">读取开门卡信息</button>
+        <button class="btn-danger" style="margin-top: 10px;" onclick="doAction('DISABLE_CARD')">注销当前开门卡</button>
+    </div>
+
+    <div class="card">
+        <h3>制作宾客卡信息</h3>
+        <div class="form-group">
+            <label>逻辑卡号：</label>
+            <input type="number" id="cardNo" value="10001">
+        </div>
+        <div class="form-group">
+            <label>宾客流水：</label>
+            <input type="number" id="guestSn" value="20002">
+        </div>
+        <div class="form-group">
+            <label>宾客序号：</label>
+            <input type="number" id="guestNo" value="1" min="1" max="255">
+        </div>
+        <div class="form-group">
+            <label>门锁代号：</label>
+            <input type="text" id="doorId" value="010101" maxlength="6" placeholder="6位门锁代号">
+        </div>
+        <div class="form-group">
+            <label>生效时间：</label>
+            <input type="text" id="beginTime" value="2026-06-22 14:00" placeholder="yyyy-MM-dd HH:mm">
+        </div>
+        <div class="form-group">
+            <label>失效时间：</label>
+            <input type="text" id="endTime" value="2026-06-23 12:00" placeholder="yyyy-MM-dd HH:mm">
+        </div>
+        <button onclick="doAction('WRITE_CARD')">向卡片写入上方数据</button>
+    </div>
+
+    <div class="card">
+        <h3>操作日志</h3>
+        <div id="log-area">等待操作...</div>
+    </div>
+
+    <script type="text/javascript">
+        // 等待 UniApp 框架的 JSBridge 注入完成
+        document.addEventListener('UniAppJSBridgeReady', function () {
+            log("UniApp 桥接环境就绪，可以进行 NFC 操作。");
+        });
+
+        // 统一向 UniApp 发送事件的方法
+        function doAction(actionType) {
+            // 获取基础通用公共参数
+            const sectorNo = parseInt(document.getElementById('sectorNo').value);
+            const hotelType = parseInt(document.getElementById('hotelType').value);
+            const hotelPwd = document.getElementById('hotelPwd').value;
+
+            let packet = {
+                action: actionType,
+                payload: {
+                    sectorNo: sectorNo,
+                    hotelType: hotelType,
+                    hotelPwd: hotelPwd
+                }
+            };
+
+            // 如果是写卡，拼装表单上的 GuestCard 业务数据
+            if (actionType === 'WRITE_CARD') {
+                packet.payload.cardData = {
+                    cardNo: parseInt(document.getElementById('cardNo').value),
+                    guestSn: parseInt(document.getElementById('guestSn').value),
+                    guestNo: parseInt(document.getElementById('guestNo').value),
+                    doorId: document.getElementById('doorId').value,
+                    beginTime: document.getElementById('beginTime').value,
+                    endTime: document.getElementById('endTime').value,
+                    suitDoor: "",
+                    pubDoor: "",
+                    liftData: "",
+                    usePowerSwitch: true,
+                    systemId: "BTPSW",
+                    isDisabled: false
+                };
+            }
+
+            log(`向 App 发送指令: ${actionType}... 请贴紧卡片`);
+
+            // 核心通信：向 UniApp 视图层投递消息
+            uni.postMessage({
+                data: packet
+            });
+        }
+
+        // 接收来自 UniApp (App端) 处理完原生插件后的回调结果
+        // 注：原生执行完后，UniApp 会通过 webviewController.evalJS() 把结果注入回这个函数
+        function onNfcResult(action, success, resultData) {
+            log(`\n[收到App回调] -> 动作: ${action} | 状态: ${success ? '成功' : '失败'}`);
+            log(JSON.stringify(resultData, null, 2));
+        }
+
+        // 简易日志打印工具
+        function log(msg) {
+            const area = document.getElementById('log-area');
+            area.innerText += '\n' + msg;
+            area.scrollTop = area.scrollHeight;
+        }
+    </script>
+</body>
+
+</html>

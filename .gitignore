@@ -1,0 +1,57 @@
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Build outputs
+build/
+*/build/
+!app/libs/*.aar
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration (machine-specific)
+local.properties
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# VS Code
+.vscode/
+
+# Kotlin
+.kotlin/
+
+# macOS
+.DS_Store
+._*
+
+# 打包压缩产物（体积过大，不入库）
+*.zip
+
+# uni-app 前端示例工程
+node_modules/
+unpackage/
+uniapp示例工程源码/*/unpackage/
+
+# Logs
+*.log
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# NDK
+obj/
